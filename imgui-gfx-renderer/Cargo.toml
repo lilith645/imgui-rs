@@ -1,6 +1,6 @@
 [package]
 name = "imgui-gfx-renderer"
-version = "0.1.0-pre"
+version = "0.0.24-pre"
 edition = "2018"
 authors = ["Joonas Javanainen <joonas.javanainen@gmail.com>", "imgui-rs contributors"]
 description = "gfx renderer for the imgui crate"
@@ -9,17 +9,10 @@ repository = "https://github.com/Gekkio/imgui-rs"
 license = "MIT/Apache-2.0"
 categories = ["gui", "rendering"]
 
-[features]
-opengl = []
-directx = []
-default = ["opengl"]
-
 [badges]
 travis-ci = { repository = "Gekkio/imgui-rs" }
 
 [dependencies]
 gfx = "0.18"
-imgui = { version = "0.1.0-pre", path = "../", features = ["gfx"] }
-
-[target.'cfg(windows)'.build-dependencies]
-winapi = { version = "0.3", features = ["d3dcompiler"] }
+imgui = { version = "0.0.24-pre", path = "../" }
+imgui-sys = { version = "0.0.24-pre", path = "../imgui-sys", features = ["gfx"] }

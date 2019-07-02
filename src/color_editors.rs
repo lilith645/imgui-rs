@@ -1,10 +1,9 @@
 #![warn(missing_docs)]
 use std::marker::PhantomData;
 use std::ptr;
+use sys;
 
-use crate::legacy::ImGuiColorEditFlags;
-use crate::sys;
-use crate::{ImStr, Ui};
+use crate::{ImGuiColorEditFlags, ImStr, ImVec2, ImVec4, Ui};
 
 /// Mutable reference to an editable color value.
 #[derive(Debug)]
@@ -197,10 +196,10 @@ impl<'ui, 'p> ColorEdit<'ui, 'p> {
     pub fn build(self) -> bool {
         match self.value {
             EditableColor::Float3(value) => unsafe {
-                sys::igColorEdit3(self.label.as_ptr(), value.as_mut_ptr(), self.flags.bits())
+                sys::igColorEdit3(self.label.as_ptr(), value.as_mut_ptr(), self.flags)
             },
             EditableColor::Float4(value) => unsafe {
-                sys::igColorEdit4(self.label.as_ptr(), value.as_mut_ptr(), self.flags.bits())
+                sys::igColorEdit4(self.label.as_ptr(), value.as_mut_ptr(), self.flags)
             },
         }
     }
@@ -345,7 +344,7 @@ impl<'ui, 'p> ColorPicker<'ui, 'p> {
             sys::igColorPicker4(
                 self.label.as_ptr(),
                 self.value.as_mut_ptr(),
-                self.flags.bits(),
+                self.flags,
                 ref_color,
             )
         }
@@ -356,20 +355,20 @@ impl<'ui, 'p> ColorPicker<'ui, 'p> {
 #[must_use]
 pub struct ColorButton<'ui, 'p> {
     desc_id: &'p ImStr,
-    color: [f32; 4],
+    color: ImVec4,
     flags: ImGuiColorEditFlags,
-    size: [f32; 2],
+    size: ImVec2,
     _phantom: PhantomData<&'ui Ui<'ui>>,
 }
 
 impl<'ui, 'p> ColorButton<'ui, 'p> {
     /// Constructs a new color button builder.
-    pub fn new(_: &Ui<'ui>, desc_id: &'p ImStr, color: [f32; 4]) -> Self {
+    pub fn new(_: &Ui<'ui>, desc_id: &'p ImStr, color: ImVec4) -> Self {
         ColorButton {
             desc_id,
             color,
             flags: ImGuiColorEditFlags::empty(),
-            size: [0.0, 0.0],
+            size: ImVec2::zero(),
             _phantom: PhantomData,
         }
     }
@@ -408,19 +407,12 @@ impl<'ui, 'p> ColorButton<'ui, 'p> {
     ///
     /// Use 0.0 for width and/or height to use the default size.
     #[inline]
-    pub fn size(mut self, size: [f32; 2]) -> Self {
+    pub fn size<S: Into<ImVec2>>(mut self, size: S) -> Self {
         self.size = size.into();
         self
     }
     /// Builds the color button.
     pub fn build(self) -> bool {
-        unsafe {
-            sys::igColorButton(
-                self.desc_id.as_ptr(),
-                self.color.into(),
-                self.flags.bits(),
-                self.size.into(),
-            )
-        }
+        unsafe { sys::igColorButton(self.desc_id.as_ptr(), self.color, self.flags, self.size) }
     }
 }

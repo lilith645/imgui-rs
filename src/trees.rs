@@ -1,15 +1,14 @@
 use std::marker::PhantomData;
 use sys;
 
-use super::{Condition, ImStr, Ui};
-use crate::legacy::ImGuiTreeNodeFlags;
+use super::{ImGuiCond, ImGuiTreeNodeFlags, ImStr, Ui};
 
 #[must_use]
 pub struct TreeNode<'ui, 'p> {
     id: &'p ImStr,
     label: Option<&'p ImStr>,
     opened: bool,
-    opened_cond: Condition,
+    opened_cond: ImGuiCond,
     flags: ImGuiTreeNodeFlags,
     _phantom: PhantomData<&'ui Ui<'ui>>,
 }
@@ -20,7 +19,7 @@ impl<'ui, 'p> TreeNode<'ui, 'p> {
             id,
             label: None,
             opened: false,
-            opened_cond: Condition::Never,
+            opened_cond: ImGuiCond::empty(),
             flags: ImGuiTreeNodeFlags::empty(),
             _phantom: PhantomData,
         }
@@ -31,7 +30,7 @@ impl<'ui, 'p> TreeNode<'ui, 'p> {
         self
     }
     #[inline]
-    pub fn opened(mut self, opened: bool, cond: Condition) -> Self {
+    pub fn opened(mut self, opened: bool, cond: ImGuiCond) -> Self {
         self.opened = opened;
         self.opened_cond = cond;
         self
@@ -98,12 +97,12 @@ impl<'ui, 'p> TreeNode<'ui, 'p> {
     }
     pub fn build<F: FnOnce()>(self, f: F) {
         let render = unsafe {
-            if self.opened_cond != Condition::Never {
-                sys::igSetNextItemOpen(self.opened, self.opened_cond as _);
+            if !self.opened_cond.is_empty() {
+                sys::igSetNextTreeNodeOpen(self.opened, self.opened_cond);
             }
             sys::igTreeNodeExStrStr(
                 self.id.as_ptr(),
-                self.flags.bits(),
+                self.flags,
                 super::fmt_ptr(),
                 self.label.unwrap_or(self.id).as_ptr(),
             )
@@ -168,6 +167,6 @@ impl<'ui, 'p> CollapsingHeader<'ui, 'p> {
         self
     }
     pub fn build(self) -> bool {
-        unsafe { sys::igCollapsingHeader(self.label.as_ptr(), self.flags.bits()) }
+        unsafe { sys::igCollapsingHeader(self.label.as_ptr(), self.flags) }
     }
 }

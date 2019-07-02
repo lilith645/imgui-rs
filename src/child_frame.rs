@@ -1,20 +1,19 @@
 use std::marker::PhantomData;
+use sys;
 
-use crate::legacy::ImGuiWindowFlags;
-use crate::sys;
-use crate::{ImStr, Ui};
+use super::{ImGuiWindowFlags, ImStr, ImVec2, Ui};
 
 #[must_use]
 pub struct ChildFrame<'ui, 'p> {
     name: &'p ImStr,
-    size: [f32; 2],
+    size: ImVec2,
     border: bool,
     flags: ImGuiWindowFlags,
     _phantom: PhantomData<&'ui Ui<'ui>>,
 }
 
 impl<'ui, 'p> ChildFrame<'ui, 'p> {
-    pub fn new(_: &Ui<'ui>, name: &'p ImStr, size: [f32; 2]) -> ChildFrame<'ui, 'p> {
+    pub fn new<S: Into<ImVec2>>(_: &Ui<'ui>, name: &'p ImStr, size: S) -> ChildFrame<'ui, 'p> {
         ChildFrame {
             name,
             size: size.into(),
@@ -98,14 +97,8 @@ impl<'ui, 'p> ChildFrame<'ui, 'p> {
         self
     }
     pub fn build<F: FnOnce()>(self, f: F) {
-        let render_child_frame = unsafe {
-            sys::igBeginChild(
-                self.name.as_ptr(),
-                self.size.into(),
-                self.border,
-                self.flags.bits(),
-            )
-        };
+        let render_child_frame =
+            unsafe { sys::igBeginChild(self.name.as_ptr(), self.size, self.border, self.flags) };
         if render_child_frame {
             f();
         }

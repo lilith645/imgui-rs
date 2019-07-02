@@ -2,9 +2,9 @@
 
 **Still fairly experimental!**
 
-Minimum Rust version: 1.33
+Minimum Rust version: 1.31
 
-Wrapped Dear ImGui version: 1.71
+Wrapped Dear ImGui version: 1.66b
 
 [![Build Status](https://travis-ci.org/Gekkio/imgui-rs.svg?branch=master)](https://travis-ci.org/Gekkio/imgui-rs)
 [![Latest release on crates.io](https://meritbadge.herokuapp.com/imgui)](https://crates.io/crates/imgui)
@@ -14,14 +14,14 @@ Wrapped Dear ImGui version: 1.71
 
 ```rust
 ui.window(im_str!("Hello world"))
-    .size([300.0, 100.0], Condition::FirstUseEver)
+    .size((300.0, 100.0), ImGuiCond::FirstUseEver)
     .build(|| {
         ui.text(im_str!("Hello world!"));
         ui.text(im_str!("こんにちは世界！"));
         ui.text(im_str!("This...is...imgui-rs!"));
         ui.separator();
-        let mouse_pos = ui.io().mouse_pos;
-        ui.text(im_str!("Mouse Position: ({:.1},{:.1})", mouse_pos[0], mouse_pos[1]));
+        let mouse_pos = ui.imgui().mouse_pos();
+        ui.text(im_str!("Mouse Position: ({:.1},{:.1})", mouse_pos.0, mouse_pos.1));
     })
 ```
 
@@ -33,7 +33,7 @@ ui.window(im_str!("Hello world"))
 * Not horrible way of defining and passing null-terminated UTF-8 to ImGui.
   The macro `im_str!` needs to be used most of the time. For more
   information and justification for this design, please see [issue #7](https://github.com/Gekkio/imgui-rs/issues/7)
-* Parts of imgui\_demo.cpp reimplemented in Rust as an API usage example (imgui-examples/examples/test\_window\_impl.rs)
+* Parts of imgui\_demo.cpp reimplemented in Rust as an API usage example (examples/test\_window\_impl.rs)
 
 ## Important but unimplemented things
 
@@ -56,23 +56,22 @@ ui.window(im_str!("Hello world"))
     cd imgui-rs
     git submodule update --init --recursive
 
-Main examples are located in the imgui-examples directory.
+Examples for gfx backend are under the imgui-examples directory.
+
+    cd imgui-examples
+    cargo test
+
+    cargo run --example hello_gfx
+
+Examples for glium backend are located into the imgui-glium-examples directory.
 
     # At the reposity root
-    cd imgui-examples
+    cd imgui-glium-examples
     cargo test
 
     cargo run --example hello_world
     cargo run --example test_window
     cargo run --example test_window_impl
-
-Examples for the gfx backend are under the imgui-gfx-examples directory.
-
-    cd imgui-gfx-examples
-    cargo test
-
-    cargo run --example hello_world
-    cargo run --example test_window
 
 Note to Windows users:  You will need to use the *MSVC ABI* version of the Rust compiler along
 with its associated [dependencies](https://www.rust-lang.org/en-US/downloads.html#win-foot) to
@@ -83,7 +82,7 @@ build this libary and run the examples.
 1. Change or add something
 2. Run rustfmt to guarantee code style conformance
 
-        rustup component add rustfmt
+        rustup component add rustfmt-preview
         cargo fmt
 
 3. Open a pull request in Github
